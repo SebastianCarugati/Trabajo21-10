@@ -6,15 +6,23 @@ import { useState } from "react";
 const Currencies = () => {
 
   const [valores,setValores] = useState("")
+  const [valoresId,setvaloresId] = useState("")
+  const [valoresLogoUrl,setvaloresLogoUrl] = useState("")
+  const [valorDolar,setValorDolar] = useState(0)
+  const [cantidadAc,setcantidadAc] = useState(1)
+
+
   const [cambiadorEstado, setCambiadorEstado] = useState ('')
+ 
   const llamadaApi = async (moneda) => {
 
     try {
       const response = await axios.get(
-        `https://api.nomics.com/v1/currencies/ticker?ids=${moneda}&key=8fe9c5d148a1ce1866da9fc2b79933390ab02ba1`
+        `https://api.nomics.com/v1/currencies/ticker?ids=${moneda}&key=d760c91ea0e0a5adf1692276d9b7313d85275aad`
       );
-      console.log(response.data);
-      setValores (response.id)
+      setValores (response.data[0].price)
+      setvaloresId (response.data[0].id)
+      setvaloresLogoUrl (response.data[0].logo_url)
       llamadaDolar()
     } catch (error) {
       alert(error);
@@ -22,12 +30,16 @@ const Currencies = () => {
   };
 
   const llamadaDolar = async () => {
-
     try {
       const response = await axios.get(
-        // `https://dolarblue.herokuapp.com/api/dolar-blue?key=943f30310f51c578d85fbf41ec9d0511`,[Headers] ACA NOS QUEDAMOS!
+        `https://dolarblue.herokuapp.com/api/dolar-blue`,{
+          headers: {
+            'Authorization': `Bearer 943f30310f51c578d85fbf41ec9d0511`
+        }}
       );
-      console.log(response.data);
+
+      setValorDolar (response.data.data.venta)
+
     } catch (error) {
       alert(error);
     }
@@ -36,8 +48,14 @@ const Currencies = () => {
 
 
 const handleChangeValor = (e) => {
-    console.log(e.target.value)
+    /* console.log(e.target.value) */
     llamadaApi(e.target.value)
+}
+
+const handleChangeCantidad = (e) => {
+  /* console.log(e.target.value) */
+  /* (e.target.value < 1)? setcantidadAc(1):setcantidadAc(e.target.value) */
+  if (e.target.value < 1) {setcantidadAc(1)} else {setcantidadAc(e.target.value)}
 }
 
   return (
@@ -49,6 +67,10 @@ const handleChangeValor = (e) => {
         <option value= 'SLP'>SLP</option>
         <option value= 'SHIB'>SHIB</option>
       </select>
+      <input type="number" value={cantidadAc} onChange= {handleChangeCantidad} min="1"/>
+      <p><img src={valoresLogoUrl} height ="32px" width="32px"/>{valoresId}: USD {valores}</p>
+      <p>Dolar blue: {valorDolar}</p>
+      <p>Precio en ARS: {valores * (valorDolar * cantidadAc)}</p>
     </div>
   );
 };
